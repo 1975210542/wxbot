@@ -3,9 +3,7 @@ package wx
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/1975210542/wxbot/global"
 	"github.com/1975210542/wxbot/utils"
-	"strconv"
 )
 
 type AccessToken struct {
@@ -37,7 +35,8 @@ type NotifyContent struct {
 const Token = "WHIsi4KzmQviCQ0Odcu7fvPij_Wtv1IWIdWqtmolx2Ei-BhmIkj_G9cg8Y8wjDlRwvvYa2P1chyx92MLk-Mc2mLN2WOfeWIOTRM0H7CDmRois_zUv88c2K9l4ISpvexWgYWKDQ4WD5G8p2bPhKSXQy0nEvjjA_BWZtg7cZnK9KIe3OKSdRP8C_MnzE6SzCScvsj5Ps7IZO980GYiYy-CQw"
 
 func NewWechatApplication(toUser string) *WechatApplication {
-	agentId, _ := strconv.Atoi(global.WxSetting.AgentId)
+	//agentId, _ := strconv.Atoi(global.WxSetting.AgentId)
+	agentId := 1000002
 	data := &WechatApplication{
 		ToUser:                 toUser,
 		MsgType:                "text",
@@ -51,7 +50,9 @@ func NewWechatApplication(toUser string) *WechatApplication {
 }
 
 func (w *WechatApplication) SendTextMessage(text interface{}) string {
-	url := global.WxSetting.Url
+	//url := global.WxSetting.Url
+	url := "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="
+
 	url += Token
 	contentType := "application/json"
 	jsonStr, _ := json.Marshal(text)
