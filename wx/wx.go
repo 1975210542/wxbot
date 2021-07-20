@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/1975210542/wxbot/utils"
+	"runtime"
 )
 
 type AccessToken struct {
@@ -27,6 +28,8 @@ type WechatApplication struct {
 	EnableIdTrans          int           `json:"enable_id_trans"`
 	EnableDuplicateCheck   int           `json:"enable_duplicate_check"`
 	DuplicateCheckInterval int           `json:"duplicate_check_interval"`
+
+	Callers []string `json:"-"`
 }
 type NotifyContent struct {
 	Content string `json:"content"`
@@ -49,13 +52,34 @@ func NewWechatApplication(toUser string) *WechatApplication {
 	return data
 }
 
-func (w *WechatApplication) SendTextMessage(text interface{}) string {
+//设置当前的整个调用栈信息
+func (w *WechatApplication) WithCallersFrames() *WechatApplication {
+	maxCallerDepth := 25
+	minCallerDepth := 1
+	callers := []string{}
+	pcs := make([]uintptr, maxCallerDepth)
+	depth := runtime.Callers(minCallerDepth, pcs)
+	frames := runtime.CallersFrames(pcs[:depth])
+	for fram, more := frames.Next(); more; fram, more = frames.Next() {
+		callers = append(callers, fmt.Sprintf("%s: %d %s", fram.File, fram.Line, fram.Function))
+		if !more {
+			break
+		}
+	}
+	w.Callers = callers
+	return w
+}
+
+func (w *WechatApplication) SendTextMessage(text string) string {
 	//url := global.WxSetting.Url
 	url := "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="
 
 	url += Token
 	contentType := "application/json"
-	jsonStr, _ := json.Marshal(text)
+	var callers []string
+	callers = append(callers, text)
+	callers = append(callers, w.Callers...)
+	jsonStr, _ := json.Marshal(callers)
 	w.Text = NotifyContent{
 		Content: string(jsonStr),
 	}
